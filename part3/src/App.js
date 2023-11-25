@@ -1,11 +1,30 @@
 import './App.css';
 import { Note } from './Note';
-import { useState } from 'react';
+import { getAllNotes } from './services/notes/getAllNotes'
+import { createNote } from './services/notes/createNote';
 
-function App(props) {
-  const [notes, setNotes] = useState(props.notes)
+import { useState } from 'react';
+import { useEffect } from 'react';
+
+function App() {
+  const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
-  const [showAll, setShowAll] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => { //Using useEffect
+    getAllNotes()
+    .then(notes => {
+      setNotes(notes)
+    })
+
+    /*
+    fetch("https://jsonplaceholder.typicode.com/posts") //Make a request to a URL async with useEffect
+      .then((res) => res.json())
+      .then((json) => {
+        setNotes(json)
+      })
+    */
+  }, [/*newNote*/]) //Example with single dependency
 
   const handleChange = (e) => {
     setNewNote(e.target.value)
@@ -15,55 +34,47 @@ function App(props) {
     e.preventDefault()
 
     const noteToAddToState = {
-      id: notes.length + 1,
-      content: newNote,
-      date: new Date().toISOString(),
-      important: Math.random() < 0.5
+      title: newNote,
+      body: newNote,
+      userId: 1
     }
-    console.log(noteToAddToState)
 
-    setNotes([...notes, noteToAddToState])
+    setError('')
+
+    createNote(noteToAddToState) //Create a note
+    .then((newNote) => {
+        setNotes((prevNotes) => prevNotes.concat(newNote))
+      }).catch(e => {
+        console.error(e)
+        setError("Something was wrong")
+      })
+
+    //setNotes([...notes, noteToAddToState])
     setNewNote('')
   }
 
-  const handleShowAll = (e) => {
-    setShowAll(() => !showAll)
-  }
-
-  /* Verify if the array is undefined or it´s empty
+  // Verify if the array is undefined or it´s empty
   if (typeof notes === 'undefined' || notes.length === 0) {
     return "We don´t have any notes to display"
   }
-  */
   
   return (
     <>
     <div>
       <h1>Notes</h1>
-      <button onClick={handleShowAll}>{showAll ? 'Show only important' : 'Show all'}</button>
           <ol>
             {notes
-            .filter(notes => {
-              if (showAll === true) return true
-              return notes.important === true
-            })
             .map(notes => //Mapping of an array with JSX and using a 'key' 
-              <Note 
-                key={notes.id} 
-                id={notes.id} 
-                content={notes.content} 
-                date={notes.date}
-              />  
-
-              /* This is another way to do the previous code
-              <Note key={notes.id} {...notes}>  
-              */
+              // This is another way to do the previous code
+              <Note key={notes.id} {...notes} />  
             )}
           </ol>
           <form  onSubmit={handleSubmit}>
             <input type='text' onChange={handleChange} value={newNote}></input>
             <button>Create note</button>
           </form>
+
+          {error ? <span style={{color: "red"}}>{ error }</span>  : ""}
     </div>
       
     </>
