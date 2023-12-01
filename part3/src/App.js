@@ -1,84 +1,92 @@
-import './App.css';
-import { Note } from './Note';
-import { getAllNotes } from './services/notes/getAllNotes'
-import { createNote } from './services/notes/createNote';
+import { useState, useEffect } from 'react'
+import Note from './components/Note'
+import Notification from './components/Notification'
+import Footer from './components/Footer'
+import noteService from './services/notes'
 
-import { useState } from 'react';
-import { useEffect } from 'react';
-
-function App() {
+const App = () => {
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
-  const [error, setError] = useState('')
+  const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
 
-  useEffect(() => { //Using useEffect
-    getAllNotes()
-    .then(notes => {
-      setNotes(notes)
-    })
-
-    /*
-    fetch("https://jsonplaceholder.typicode.com/posts") //Make a request to a URL async with useEffect
-      .then((res) => res.json())
-      .then((json) => {
-        setNotes(json)
+  useEffect(() => {
+    noteService
+      .getAll()
+      .then(initialNotes => {
+        setNotes(initialNotes)
       })
-    */
-  }, [/*newNote*/]) //Example with single dependency
+  }, [])
 
-  const handleChange = (e) => {
-    setNewNote(e.target.value)
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    const noteToAddToState = {
-      title: newNote,
-      body: newNote,
-      userId: 1
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      important: Math.random() > 0.5,
     }
 
-    setError('')
-
-    createNote(noteToAddToState) //Create a note
-    .then((newNote) => {
-        setNotes((prevNotes) => prevNotes.concat(newNote))
-      }).catch(e => {
-        console.error(e)
-        setError("Something was wrong")
+    noteService
+      .create(noteObject)
+        .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
+        setNewNote('')
       })
-
-    //setNotes([...notes, noteToAddToState])
-    setNewNote('')
   }
 
-  // Verify if the array is undefined or it´s empty
-  if (typeof notes === 'undefined' || notes.length === 0) {
-    return "We don´t have any notes to display"
+  const handleNoteChange = (event) => {
+    setNewNote(event.target.value)
   }
+
+  const notesToShow = showAll
+    ? notes
+    : notes.filter(note => note.important)
+
+   const toggleImportanceOf = id => {
+      const note = notes.find(n => n.id === id)
+      const changedNote = { ...note, important: !note.important }
   
-  return (
-    <>
-    <div>
-      <h1>Notes</h1>
-          <ol>
-            {notes
-            .map(notes => //Mapping of an array with JSX and using a 'key' 
-              // This is another way to do the previous code
-              <Note key={notes.id} {...notes} />  
-            )}
-          </ol>
-          <form  onSubmit={handleSubmit}>
-            <input type='text' onChange={handleChange} value={newNote}></input>
-            <button>Create note</button>
-          </form>
+      noteService
+        .update(id, changedNote).then(returnedNote => {
+          setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+        })
+        .catch(error => {
+          setErrorMessage(
+            `Note '${note.content}' was already removed from server`
+          )
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+          setNotes(notes.filter(n => n.id !== id))
+        })
+    }
 
-          {error ? <span style={{color: "red"}}>{ error }</span>  : ""}
+  return (
+    <div>
+      <h1>Notes app</h1>
+      <Notification message={errorMessage} />
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all' }
+        </button>
+      </div> 
+      <ul>
+        <ul>
+          {notesToShow.map(note => 
+            <Note
+              key={note.id}
+              note={note}
+              toggleImportance={() => toggleImportanceOf(note.id)}
+            />
+          )}
+        </ul>
+      </ul>
+      <form onSubmit={addNote}>
+        <input value={newNote} onChange={handleNoteChange} />
+        <button type="submit">save</button>
+      </form>
+      <Footer />
     </div>
-      
-    </>
-  );
+  )
 }
 
-export default App;
+export default App
