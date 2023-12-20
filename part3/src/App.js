@@ -5,7 +5,7 @@ import Footer from './components/Footer'
 import noteService from './services/notes'
 import loginService from './services/login'
 import LoginForm from './components/LoginForm'
-import Togglable from './components/Togglable'
+import NoteForm from './components/NoteForm'
 
 const App = () => {
   const [notes, setNotes] = useState([])
@@ -108,32 +108,22 @@ const App = () => {
     const notesToShow = showAll
     ? notes
     : notes.filter(note => note.important)
-
-    const renderCreateNoteForm = () => {
-      return (
-        <form onSubmit={addNote}>
-            <input 
-              placeholder='Write your note content' 
-              value={newNote} 
-              onChange={handleNoteChange} />
-            <button type="submit">save</button>  
-        </form>
-      )
-    } 
       
   return (
     <div>
       <h1>Notes app</h1>
 
-      <Togglable> 
-        Hi children
-      </Togglable> 
-
       <Notification message={errorMessage} />
 
       {
         user 
-        ? renderCreateNoteForm()
+        ? <NoteForm
+          handleSubmit={addNote}
+          newNote={newNote}
+          handleNoteChange={handleNoteChange} 
+          handleLogout={handleLogout}
+        />
+
         : <LoginForm  
             username={username}
             password={password}
@@ -163,11 +153,6 @@ const App = () => {
           )}
         </ul>
       </ul>
-      <div>
-        <button onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
       <Footer />
     </div>
   )

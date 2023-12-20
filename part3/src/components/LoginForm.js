@@ -1,20 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
+import Togglable from './Togglable'
 
 export default function LoginForm ({handleSubmit, handleUsernameChange, handlePasswordChange, username, password}) {
-    const[loginVisible, setLoginVisible] = useState(false)
-    
-    const hideWhenVisible = {display: loginVisible ? 'none' : ''}
-    const showWhenVisible = {display: loginVisible ? '' : 'none'}
-
     return (
-        <div>
-            <div style={hideWhenVisible}>
-                <button onClick={() => setLoginVisible(true)}>
-                    Show login
-                </button>
-            </div>
-
-            <div style={showWhenVisible}>
+        <Togglable buttonLabel = 'Show login'>
+            <div>
                 <form onSubmit={handleSubmit}>
                     <div>
                     <input
@@ -38,11 +28,7 @@ export default function LoginForm ({handleSubmit, handleUsernameChange, handlePa
                     <button type='submit'>Login</button>
                     </div>
                 </form>
-
-                <button onClick={() => setLoginVisible(false)}>
-                    Cancel
-                </button>
             </div> 
-        </div>  
+        </Togglable>
     )
 }
