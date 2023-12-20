@@ -9,7 +9,6 @@ import NoteForm from './components/NoteForm'
 
 const App = () => {
   const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
 
@@ -34,24 +33,14 @@ const App = () => {
     }
   }, [])
 
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      important: Math.random() > 0.5,
-    }
-
+  const addNote = (noteObject) => {
     noteService
       .create(noteObject)
         .then(returnedNote => {
         setNotes(notes.concat(returnedNote))
-        setNewNote('')
       })
   }
 
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
-  }
 
    const toggleImportanceOf = id => {
       const note = notes.find(n => n.id === id)
@@ -118,9 +107,7 @@ const App = () => {
       {
         user 
         ? <NoteForm
-          handleSubmit={addNote}
-          newNote={newNote}
-          handleNoteChange={handleNoteChange} 
+          addNote={addNote}
           handleLogout={handleLogout}
         />
 
@@ -134,6 +121,7 @@ const App = () => {
               ({target}) => setPassword(target.value)
             }
             handleSubmit={handleLogin}
+            addNote={addNote}
           />
       }
 
