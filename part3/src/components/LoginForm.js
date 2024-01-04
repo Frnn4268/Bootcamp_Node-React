@@ -26,7 +26,9 @@ export default function LoginForm ({handleSubmit, handleUsernameChange, handlePa
                     />
                     </div>
                     <div>
-                    <button type='submit'>Login</button>
+                        <button id='form-login-button' type='submit'>
+                            Login
+                        </button>
                     </div>
                 </form>
             </div> 
