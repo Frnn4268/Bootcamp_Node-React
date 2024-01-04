@@ -34,15 +34,25 @@ describe('Note App', () => {
         cy.contains('New note')
     })
 
+    /*
+    it('login fails with wrong credentials', () => {
+        cy.contains('Show login').click()
+        cy.get('[placeholder="Username"]').type('wrong-username')
+        cy.get('[placeholder="Password"]').type('wrong-password')
+        cy.get('#form-login-button').click()
+        cy.contains('New note')
+
+        cy.get('error')
+            .should('contain', 'Wrong credentials')
+            .should('have.css', 'rgb(255, 0, 0)', 'border-style', 'solid')
+    })
+    */
+
     // Test the functionality of the Note App when a user is logged in.
     describe('when user logged in', () => {
         // Before each test, log in the user.
         beforeEach(() => {
-            cy.contains('Show login').click()
-            cy.get('[placeholder="Username"]').type('Frnn')
-            cy.get('[placeholder="Password"]').type('12345')
-            cy.get('#form-login-button').click()
-            cy.contains('New note')
+            cy.login({username: 'Frnn', password: '12345'}) // Login command with Cypress
         })
 
         // Test that a new note can be created.
@@ -52,6 +62,36 @@ describe('Note App', () => {
             cy.get('input').type(noteContent)
             cy.contains('save').click()
             cy.contains(noteContent)
+        })
+
+        describe('and note exists', () => {
+            beforeEach(() => {
+                cy.createNote({
+                    content: 'A note created from Cypress No.1', 
+                    important: false
+                })
+
+                cy.createNote({
+                    content: 'A note created from Cypress No.2', 
+                    important: false
+                })
+
+                cy.createNote({
+                    content: 'A note created from Cypress No.3', 
+                    important: false
+                })
+            })
+
+            it('it can be made important', () => {
+                cy.contains('A note created from Cypress No.1').as('theNote')
+                
+                cy.get('@theNote')
+                .contains('make important')
+                .click()
+
+                cy.get("@theNote")
+                .contains('make not important')
+            })
         })
     })
 })
